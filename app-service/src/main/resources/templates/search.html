@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Recherche')}">
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<!-- Token CSRF accessible au JS -->
+<meta th:name="_csrf" th:content="${_csrf.token}"/>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+
+    <div th:if="${results == null}" class="text-center text-gray-500 mt-20">
+        <i data-lucide="search" class="w-12 h-12 mx-auto mb-4 opacity-40"></i>
+        <p>Recherchez un film dans la barre de recherche</p>
+    </div>
+
+    <div th:if="${results != null && results.isEmpty()}" class="text-center text-gray-500 mt-20">
+        <p>Aucun resultat pour <span class="text-white" th:text="'&quot;' + ${query} + '&quot;'"></span></p>
+    </div>
+
+    <div th:if="${results != null && !results.isEmpty()}">
+        <p class="text-gray-400 text-sm mb-6">
+            <span th:text="${results.size()}"></span> resultats pour
+            <span class="text-white" th:text="'&quot;' + ${query} + '&quot;'"></span>
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div th:each="movie : ${results}"
+                 class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 flex flex-col">
+
+                <div class="aspect-[2/3] bg-gray-800 relative">
+                    <img th:if="${movie.posterUrl != null}"
+                         th:src="${movie.posterUrl}"
+                         th:alt="${movie.title}"
+                         class="w-full h-full object-cover"/>
+                    <div th:unless="${movie.posterUrl != null}"
+                         class="w-full h-full flex items-center justify-center text-gray-600">
+                        <i data-lucide="film" class="w-10 h-10"></i>
+                    </div>
+                    <div th:if="${alreadyAdded.contains(movie.id)}"
+                         class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span class="text-sm text-green-400 font-medium flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i> Dans ma liste
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-3 flex flex-col flex-1 gap-2">
+                    <div>
+                        <p class="text-sm font-medium leading-tight" th:text="${movie.title}"></p>
+                        <p class="text-xs text-gray-500" th:text="${movie.releaseYear}"></p>
+                    </div>
+
+                    <!-- Boutons actions -->
+                    <div th:unless="${alreadyAdded.contains(movie.id)}" class="mt-auto">
+
+                        <!-- Connecté : fetch en arriere-plan -->
+                        <div sec:authorize="isAuthenticated()" class="card-actions flex gap-2">
+                            <button onclick="addToWatchlist(this, 'TO_WATCH')"
+                                    th:data-id="${movie.id}"
+                                    class="flex-1 flex items-center justify-center gap-1 bg-gray-800 hover:bg-gray-700 text-xs py-1.5 rounded-lg transition-colors">
+                                <i data-lucide="bookmark-plus" class="w-3.5 h-3.5"></i>
+                                A voir
+                            </button>
+                            <button onclick="openSeenModal(this)"
+                                    th:data-id="${movie.id}"
+                                    th:data-title="${movie.title}"
+                                    class="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs py-1.5 rounded-lg transition-colors">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                Deja vu
+                            </button>
+                        </div>
+
+                        <!-- Anonyme : redirection vers login -->
+                        <div sec:authorize="!isAuthenticated()" class="flex gap-2">
+                            <button onclick="goToLogin()"
+                                    class="flex-1 flex items-center justify-center gap-1 bg-gray-800 hover:bg-gray-700 text-xs py-1.5 rounded-lg transition-colors">
+                                <i data-lucide="bookmark-plus" class="w-3.5 h-3.5"></i>
+                                A voir
+                            </button>
+                            <button onclick="goToLogin()"
+                                    class="flex-1 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-xs py-1.5 rounded-lg transition-colors">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                Deja vu
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modal noter un film deja vu -->
+<div id="seen-modal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
+        <h2 class="font-semibold mb-1">Marquer comme vu</h2>
+        <p id="modal-title" class="text-sm text-gray-400 mb-4"></p>
+
+        <form id="seen-form" onsubmit="submitSeenForm(event)">
+            <input type="hidden" id="modal-tmdb-id" name="tmdbId"/>
+            <input type="hidden" name="status" value="SEEN"/>
+
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-2">Note (optionnel)</label>
+                <div class="flex gap-2">
+                    <label th:each="i : ${#numbers.sequence(1, 5)}" class="cursor-pointer">
+                        <input type="radio" name="rating" th:value="${i}" class="sr-only peer"/>
+                        <i data-lucide="star"
+                           class="w-7 h-7 text-gray-600 peer-checked:text-yellow-400 peer-checked:fill-yellow-400 hover:text-yellow-300 transition-colors"></i>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm text-gray-400 mb-1">Commentaire (optionnel)</label>
+                <textarea name="comment" rows="2" placeholder="Votre avis..."
+                          class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" onclick="closeModal()"
+                        class="flex-1 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition-colors">
+                    Annuler
+                </button>
+                <button type="submit"
+                        class="flex-1 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-sm font-medium transition-colors">
+                    Valider
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+
+    const csrfMeta = document.querySelector('meta[name="_csrf"]');
+    const csrf = csrfMeta ? csrfMeta.content : '';
+    let activeBtn = null;
+
+    function goToLogin() {
+        window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+    }
+
+    function addToWatchlist(btn, status) {
+        const body = new URLSearchParams({
+            tmdbId: btn.dataset.id,
+            status: status,
+            _csrf: csrf
+        });
+        fetch('/watchlist/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        }).then(() => markAdded(btn));
+    }
+
+    function markAdded(btn) {
+        const container = btn.closest('.card-actions');
+        container.innerHTML = `
+            <span class="w-full flex items-center justify-center gap-1.5 text-xs text-green-400 py-1.5 font-medium">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Ajoute
+            </span>`;
+        lucide.createIcons();
+    }
+
+    function openSeenModal(btn) {
+        activeBtn = btn;
+        document.getElementById('modal-title').textContent = btn.dataset.title;
+        document.getElementById('modal-tmdb-id').value = btn.dataset.id;
+        document.getElementById('seen-form').reset();
+        document.getElementById('seen-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('seen-modal').classList.add('hidden');
+        activeBtn = null;
+    }
+
+    function submitSeenForm(event) {
+        event.preventDefault();
+        const btn = activeBtn;
+        const body = new URLSearchParams(new FormData(event.target));
+        body.append('_csrf', csrf);
+        fetch('/watchlist/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        }).then(() => {
+            closeModal();
+            if (btn) markAdded(btn);
+        });
+    }
+</script>
+</body>
+</html>

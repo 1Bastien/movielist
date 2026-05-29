@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Films vus')}"></head>
+<body class="bg-gray-950 text-white min-h-screen">
+
+<nav th:replace="~{fragments/layout :: nav}"></nav>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-semibold flex items-center gap-2">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+            Films vus
+            <span class="text-sm font-normal text-gray-500 ml-1" th:text="'(' + ${entries.size()} + ')'"></span>
+        </h1>
+
+        <div class="flex items-center gap-2 text-sm">
+            <a th:href="@{/watchlist/seen(sort=false)}"
+               th:classappend="${!sort} ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'"
+               class="px-3 py-1.5 rounded-lg transition-colors">
+                Recents
+            </a>
+            <a th:href="@{/watchlist/seen(sort=true)}"
+               th:classappend="${sort} ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'"
+               class="flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors">
+                <i data-lucide="star" class="w-3.5 h-3.5"></i>
+                Meilleures notes
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${entries.isEmpty()}" class="text-center text-gray-500 mt-20">
+        <i data-lucide="check-circle" class="w-12 h-12 mx-auto mb-4 opacity-40"></i>
+        <p>Vous n'avez pas encore marque de film comme vu.</p>
+    </div>
+
+    <div th:unless="${entries.isEmpty()}" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div th:each="entry : ${entries}"
+             class="bg-gray-900 rounded-xl overflow-hidden border border-gray-800 flex flex-col">
+
+            <div class="aspect-[2/3] bg-gray-800 relative">
+                <img th:if="${entry.posterUrl != null}"
+                     th:src="${entry.posterUrl}"
+                     th:alt="${entry.title}"
+                     class="w-full h-full object-cover"/>
+                <div th:unless="${entry.posterUrl != null}"
+                     class="w-full h-full flex items-center justify-center text-gray-600">
+                    <i data-lucide="film" class="w-10 h-10"></i>
+                </div>
+                <!-- Badge note -->
+                <div th:if="${entry.rating != null}"
+                     class="absolute top-2 right-2 bg-black/80 rounded-lg px-2 py-1 flex items-center gap-1">
+                    <i data-lucide="star" class="w-3 h-3 text-yellow-400 fill-yellow-400"></i>
+                    <span class="text-xs font-medium" th:text="${entry.rating} + '/5'"></span>
+                </div>
+            </div>
+
+            <div class="p-3 flex flex-col flex-1 gap-2">
+                <p class="text-sm font-medium leading-tight" th:text="${entry.title}"></p>
+
+                <!-- Etoiles -->
+                <div th:if="${entry.rating != null}" class="flex gap-0.5">
+                    <span th:each="i : ${#numbers.sequence(1, 5)}">
+                        <i data-lucide="star"
+                           th:class="${i <= entry.rating} ? 'w-3.5 h-3.5 text-yellow-400 fill-yellow-400' : 'w-3.5 h-3.5 text-gray-700'"></i>
+                    </span>
+                </div>
+                <p th:if="${entry.rating == null}" class="text-xs text-gray-600">Non note</p>
+
+                <!-- Commentaire -->
+                <p th:if="${entry.comment != null && !entry.comment.isBlank()}"
+                   class="text-xs text-gray-400 italic line-clamp-2"
+                   th:text="${entry.comment}"></p>
+
+                <form action="#" th:action="@{/watchlist/{id}/delete(id=${entry.id})}" method="post" class="mt-auto">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="from" value="watchlist/seen"/>
+                    <button type="submit"
+                            class="w-full flex items-center justify-center gap-1 bg-gray-800 hover:bg-red-900/50 hover:text-red-400 text-xs py-1.5 rounded-lg transition-colors">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        Retirer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

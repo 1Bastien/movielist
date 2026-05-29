@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:fragment="head(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title} + ' - MovieList'">MovieList</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+
+<nav th:fragment="nav" class="bg-gray-900 border-b border-gray-800">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6">
+        <a href="/search" class="text-white font-bold text-lg tracking-tight">MovieList</a>
+
+        <form action="/search" method="get" class="flex-1 max-w-md">
+            <div class="relative">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                <input type="text" name="q" placeholder="Rechercher un film..."
+                       class="w-full bg-gray-800 text-white pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+            </div>
+        </form>
+
+        <!-- Navigation connecté -->
+        <div sec:authorize="isAuthenticated()" class="flex items-center gap-4 ml-auto">
+            <a href="/watchlist" class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white">
+                <i data-lucide="bookmark" class="w-4 h-4"></i>
+                A voir
+            </a>
+            <a href="/watchlist/seen" class="flex items-center gap-1.5 text-sm text-gray-300 hover:text-white">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                Vus
+            </a>
+            <span class="text-gray-500 text-sm" sec:authentication="name">User</span>
+            <form action="/logout" method="post" class="inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="flex items-center gap-1 text-sm text-gray-400 hover:text-white">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Navigation anonyme -->
+        <div sec:authorize="!isAuthenticated()" class="flex items-center gap-3 ml-auto">
+            <a href="/login"
+               class="text-sm text-gray-300 hover:text-white transition-colors">
+                Connexion
+            </a>
+            <a href="/register"
+               class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg transition-colors">
+                S'inscrire
+            </a>
+        </div>
+    </div>
+</nav>
+
+</html>
