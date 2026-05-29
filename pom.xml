@@ -25,6 +25,10 @@
         <java.version>21</java.version>
         <wiremock.version>3.6.0</wiremock.version>
         <jacoco.version>0.8.12</jacoco.version>
+        <sonar.organization>1bastien</sonar.organization>
+        <sonar.projectKey>1Bastien_movielist</sonar.projectKey>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencyManagement>
@@ -62,6 +66,11 @@
                             <goals><goal>report</goal></goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>4.0.0.4121</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: head('A voir')}"></head>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('A voir')}"><title>A voir - MovieList</title></head>
 <body class="bg-gray-950 text-white min-h-screen">
 
 <nav th:replace="~{fragments/layout :: nav}"></nav>
@@ -68,8 +68,8 @@
         <form id="seen-form" action="/watchlist/1/seen" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-            <div class="mb-4">
-                <label class="block text-sm text-gray-400 mb-2">Note (optionnel)</label>
+            <fieldset class="mb-4">
+                <legend class="block text-sm text-gray-400 mb-2">Note (optionnel)</legend>
                 <div class="flex gap-2">
                     <label th:each="i : ${#numbers.sequence(1, 5)}" class="cursor-pointer">
                         <input type="radio" name="rating" th:value="${i}" class="sr-only peer"/>
@@ -77,11 +77,11 @@
                            class="w-7 h-7 text-gray-600 peer-checked:text-yellow-400 peer-checked:fill-yellow-400 hover:text-yellow-300 transition-colors"></i>
                     </label>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="mb-4">
-                <label class="block text-sm text-gray-400 mb-1">Commentaire (optionnel)</label>
-                <textarea name="comment" rows="2" placeholder="Votre avis..."
+                <label for="watchlist-comment" class="block text-sm text-gray-400 mb-1">Commentaire (optionnel)</label>
+                <textarea id="watchlist-comment" name="comment" rows="2" placeholder="Votre avis..."
                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
 

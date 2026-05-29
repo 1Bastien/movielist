@@ -21,7 +21,15 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build and test all modules
+      - name: Build, test and SonarCloud analysis
+        if: github.event_name == 'push'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_PROJECT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn verify sonar:sonar
+
+      - name: Build and test (pull request, no Sonar)
+        if: github.event_name == 'pull_request'
         run: mvn verify
 
       - name: Upload auth-service JaCoCo report
