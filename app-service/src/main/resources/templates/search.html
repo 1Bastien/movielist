@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
+<html lang="fr" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments/layout :: head('Recherche')}">
+    <title>Recherche - MovieList</title>
     <meta th:name="_csrf" th:content="${_csrf.token}"/>
 </head>
 <body class="bg-gray-950 text-white min-h-screen">
@@ -106,8 +107,8 @@
             <input type="hidden" id="modal-tmdb-id" name="tmdbId"/>
             <input type="hidden" name="status" value="SEEN"/>
 
-            <div class="mb-4">
-                <label class="block text-sm text-gray-400 mb-2">Note (optionnel)</label>
+            <fieldset class="mb-4">
+                <legend class="block text-sm text-gray-400 mb-2">Note (optionnel)</legend>
                 <div class="flex gap-2">
                     <label th:each="i : ${#numbers.sequence(1, 5)}" class="cursor-pointer">
                         <input type="radio" name="rating" th:value="${i}" class="sr-only peer"/>
@@ -115,11 +116,11 @@
                            class="w-7 h-7 text-gray-600 peer-checked:text-yellow-400 peer-checked:fill-yellow-400 hover:text-yellow-300 transition-colors"></i>
                     </label>
                 </div>
-            </div>
+            </fieldset>
 
             <div class="mb-4">
-                <label class="block text-sm text-gray-400 mb-1">Commentaire (optionnel)</label>
-                <textarea name="comment" rows="2" placeholder="Votre avis..."
+                <label for="search-comment" class="block text-sm text-gray-400 mb-1">Commentaire (optionnel)</label>
+                <textarea id="search-comment" name="comment" rows="2" placeholder="Votre avis..."
                           class="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
             </div>
 
