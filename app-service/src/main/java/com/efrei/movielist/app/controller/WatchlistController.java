@@ -68,6 +68,7 @@ public class WatchlistController {
     public String delete(@PathVariable Long id,
                          @RequestParam(defaultValue = "watchlist") String from) {
         watchlistService.remove(id);
-        return "redirect:/" + from;
+        String destination = "watchlist/seen".equals(from) ? "watchlist/seen" : "watchlist";
+        return "redirect:/" + destination;
     }
 }
