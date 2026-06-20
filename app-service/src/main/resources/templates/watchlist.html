@@ -70,11 +70,11 @@
 
             <fieldset class="mb-4">
                 <legend class="block text-sm text-gray-400 mb-2">Note (optionnel)</legend>
-                <div class="flex gap-2">
+                <div class="flex gap-2" id="rating-stars">
                     <label th:each="i : ${#numbers.sequence(1, 5)}" class="cursor-pointer">
-                        <input type="radio" name="rating" th:value="${i}" class="sr-only peer"/>
+                        <input type="radio" name="rating" th:value="${i}" class="sr-only"/>
                         <i data-lucide="star"
-                           class="w-7 h-7 text-gray-600 peer-checked:text-yellow-400 peer-checked:fill-yellow-400 hover:text-yellow-300 transition-colors"></i>
+                           class="w-7 h-7 text-gray-600 hover:text-yellow-300 transition-colors"></i>
                     </label>
                 </div>
             </fieldset>
@@ -102,10 +102,26 @@
 <script>
     lucide.createIcons();
 
+    function applyStarColors(value) {
+        document.querySelectorAll('#rating-stars input[name="rating"]').forEach(input => {
+            const icon = input.nextElementSibling;
+            const active = Number(input.value) <= value;
+            icon.classList.toggle('text-yellow-400', active);
+            icon.classList.toggle('fill-yellow-400', active);
+            icon.classList.toggle('text-gray-600', !active);
+        });
+    }
+
+    document.querySelectorAll('#rating-stars input[name="rating"]').forEach(input => {
+        input.addEventListener('change', () => applyStarColors(Number(input.value)));
+    });
+
     function openSeenModal(btn) {
         const id = btn.dataset.id;
         document.getElementById('modal-title').textContent = btn.dataset.title;
         document.getElementById('seen-form').action = '/watchlist/' + id + '/seen';
+        document.getElementById('seen-form').reset();
+        applyStarColors(0);
         document.getElementById('seen-modal').classList.remove('hidden');
     }
 
